@@ -8,3 +8,4 @@ hex_core   = { workspace = true }
 hex_agents = { workspace = true }
 ratatui    = { workspace = true }
 crossterm  = { workspace = true }
+thiserror  = { workspace = true }

@@ -292,6 +292,7 @@ dependencies = [
  "hex_agents",
  "hex_core",
  "ratatui",
+ "thiserror",
 ]
 
 [[package]]
