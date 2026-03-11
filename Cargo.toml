@@ -1,6 +1,38 @@
-[package]
-name = "ml_hex"
+[workspace]
+members = [
+    ".",
+    "crates/hex_core",
+    "crates/hex_agents",
+    "crates/hex_tui",
+    "crates/hex_train",
+]
+resolver = "2"
+
+[workspace.package]
 version = "0.1.0"
 edition = "2024"
 
+[workspace.dependencies]
+# Internal crates
+hex_core    = { path = "crates/hex_core" }
+hex_agents  = { path = "crates/hex_agents" }
+hex_tui     = { path = "crates/hex_tui" }
+hex_train   = { path = "crates/hex_train" }
+# External
+thiserror = "2"
+rand      = "0.9"
+clap      = { version = "4", features = ["derive"] }
+ratatui   = "0.29"
+crossterm = "0.28"
+
+[package]
+name    = "ml_hex"
+version.workspace = true
+edition.workspace = true
+
 [dependencies]
+hex_core   = { workspace = true }
+hex_agents = { workspace = true }
+hex_tui    = { workspace = true }
+hex_train  = { workspace = true }
+clap       = { workspace = true }

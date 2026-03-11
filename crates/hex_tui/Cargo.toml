@@ -1,0 +1,10 @@
+[package]
+name    = "hex_tui"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+hex_core   = { workspace = true }
+hex_agents = { workspace = true }
+ratatui    = { workspace = true }
+crossterm  = { workspace = true }
