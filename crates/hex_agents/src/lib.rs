@@ -1,7 +1,9 @@
 mod heuristic;
+mod mcts;
 mod random;
 
 pub use heuristic::HeuristicAgent;
+pub use mcts::{MctsAgent, MctsConfig};
 pub use random::RandomAgent;
 
 use hex_core::{GameState, Move};

@@ -69,6 +69,71 @@ impl GameState {
         self.winner().is_some()
     }
 
+    /// Returns a winning move for the current player if one exists, or `None`.
+    ///
+    /// Runs in O(CELLS × 6) amortized time using in-place DSU path compression.
+    /// Much cheaper than calling `apply_move` + `is_terminal` for each candidate.
+    pub fn winning_move(&mut self) -> Option<Move> {
+        match self.current_player {
+            Cell::Red => {
+                let root_top = self.dsu_red.find(TOP);
+                let root_bot = self.dsu_red.find(BOTTOM);
+                for i in 0..CELLS {
+                    if self.cells[i] != Cell::Empty {
+                        continue;
+                    }
+                    let r = i / SIZE;
+                    let c = i % SIZE;
+                    let mut at_top = r == 0;
+                    let mut at_bot = r == SIZE - 1;
+                    for (nr, nc) in neighbors(r, c) {
+                        if self.cells[nr * SIZE + nc] == Cell::Red {
+                            let root = self.dsu_red.find(nr * SIZE + nc);
+                            if root == root_top {
+                                at_top = true;
+                            }
+                            if root == root_bot {
+                                at_bot = true;
+                            }
+                        }
+                    }
+                    if at_top && at_bot {
+                        return Some(Move { row: r as u8, col: c as u8 });
+                    }
+                }
+            }
+            Cell::Blue => {
+                let root_left = self.dsu_blue.find(LEFT);
+                let root_right = self.dsu_blue.find(RIGHT);
+                for i in 0..CELLS {
+                    if self.cells[i] != Cell::Empty {
+                        continue;
+                    }
+                    let r = i / SIZE;
+                    let c = i % SIZE;
+                    let mut at_left = c == 0;
+                    let mut at_right = c == SIZE - 1;
+                    for (nr, nc) in neighbors(r, c) {
+                        if self.cells[nr * SIZE + nc] == Cell::Blue {
+                            let root = self.dsu_blue.find(nr * SIZE + nc);
+                            if root == root_left {
+                                at_left = true;
+                            }
+                            if root == root_right {
+                                at_right = true;
+                            }
+                        }
+                    }
+                    if at_left && at_right {
+                        return Some(Move { row: r as u8, col: c as u8 });
+                    }
+                }
+            }
+            Cell::Empty => unreachable!(),
+        }
+        None
+    }
+
     pub fn legal_moves(&self) -> impl Iterator<Item = Move> + '_ {
         (0..CELLS).filter_map(|i| {
             if self.cells[i] == Cell::Empty {
