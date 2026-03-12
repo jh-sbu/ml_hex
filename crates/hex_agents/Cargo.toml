@@ -6,3 +6,4 @@ edition.workspace = true
 [dependencies]
 hex_core = { workspace = true }
 rand     = { workspace = true }
+burn     = { workspace = true, features = ["ndarray", "std"] }

@@ -24,6 +24,14 @@ rand      = "0.9"
 clap      = { version = "4", features = ["derive"] }
 ratatui   = "0.29"
 crossterm = "0.28"
+burn      = { version = "0.20", default-features = false }
+
+# Optimize numerical crates so Burn/NdArray forward passes are fast.
+[profile.dev]
+opt-level = 2
+
+[profile.test]
+opt-level = 2
 
 [package]
 name    = "ml_hex"

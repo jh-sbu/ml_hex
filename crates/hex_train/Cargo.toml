@@ -6,3 +6,5 @@ edition.workspace = true
 [dependencies]
 hex_core   = { workspace = true }
 hex_agents = { workspace = true }
+burn       = { workspace = true, features = ["autodiff", "ndarray", "std"] }
+rand       = { workspace = true }

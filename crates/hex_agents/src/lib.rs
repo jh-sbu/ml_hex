@@ -1,9 +1,13 @@
 mod heuristic;
 mod mcts;
 mod random;
+pub mod alpha_zero;
+pub mod model;
 
+pub use alpha_zero::{AlphaZeroAgent, AlphaZeroConfig};
 pub use heuristic::HeuristicAgent;
 pub use mcts::{MctsAgent, MctsConfig};
+pub use model::HexNet;
 pub use random::RandomAgent;
 
 use hex_core::{GameState, Move};
