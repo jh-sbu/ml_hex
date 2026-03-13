@@ -55,8 +55,14 @@ struct AlphazeroArgs {
 
 #[derive(clap::Args)]
 struct PpoArgs {
-    #[arg(trailing_var_arg = true, allow_hyphen_values = true)]
-    _args: Vec<String>,
+    #[arg(long, default_value_t = 50)]
+    generations: u32,
+    #[arg(long, default_value_t = 20)]
+    episodes: u32,
+    #[arg(long, default_value_t = 4)]
+    ppo_epochs: u32,
+    #[arg(long, default_value_t = 256)]
+    batch_size: usize,
 }
 
 fn main() {
@@ -94,7 +100,19 @@ fn main() {
                     std::process::exit(1);
                 }
             }
-            TrainCmd::Ppo(_) => eprintln!("ppo: not yet implemented"),
+            TrainCmd::Ppo(args) => {
+                let config = hex_train::PpoConfig {
+                    generations: args.generations,
+                    episodes_per_gen: args.episodes,
+                    ppo_epochs: args.ppo_epochs,
+                    batch_size: args.batch_size,
+                    ..Default::default()
+                };
+                if let Err(e) = hex_train::train_ppo(config) {
+                    eprintln!("train error: {e}");
+                    std::process::exit(1);
+                }
+            }
         },
     }
 }
