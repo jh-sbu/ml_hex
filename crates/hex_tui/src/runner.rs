@@ -17,9 +17,10 @@ pub struct GameRunner {
 }
 
 impl GameRunner {
-    pub fn new(red: PlayerConfig, blue: PlayerConfig) -> Self {
+    pub fn new(red: PlayerConfig, blue: PlayerConfig, swap: bool) -> Self {
+        let state = if swap { GameState::new_with_swap() } else { GameState::new() };
         Self {
-            state: GameState::new(),
+            state,
             red,
             blue,
             agent_rx: None,

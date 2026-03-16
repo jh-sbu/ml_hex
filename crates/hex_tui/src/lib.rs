@@ -56,8 +56,8 @@ mod tests {
             })
             .unwrap();
 
-        // row=0, col=0 → x = area.x(0) + row(0) + col*3(0) + 1 = 1, y = 0
-        let cell = terminal.backend().buffer().cell((1u16, 0u16)).unwrap();
+        // row=0, col=0 → x = area.x(0) + BOARD_X_OFFSET(2) + row*2(0) + col*3(0) + 1 = 3, y = BOARD_Y_OFFSET(1)
+        let cell = terminal.backend().buffer().cell((3u16, 1u16)).unwrap();
         assert_eq!(cell.symbol(), "R");
     }
 
@@ -76,8 +76,8 @@ mod tests {
             })
             .unwrap();
 
-        // cursor at (0,0) → '*' at position x=1, y=0
-        let cell = terminal.backend().buffer().cell((1u16, 0u16)).unwrap();
+        // cursor at (0,0) → '*' at position x=3, y=1
+        let cell = terminal.backend().buffer().cell((3u16, 1u16)).unwrap();
         assert_eq!(cell.symbol(), "*");
     }
 
@@ -86,6 +86,7 @@ mod tests {
         let mut runner = GameRunner::new(
             PlayerConfig::agent(RandomAgent),
             PlayerConfig::agent(RandomAgent),
+            false,
         );
         loop {
             if runner.state.is_terminal() {

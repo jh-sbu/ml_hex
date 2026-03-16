@@ -31,7 +31,7 @@ pub struct App {
 impl App {
     pub fn new(config: TuiConfig) -> Self {
         let mut app = App {
-            runner: GameRunner::new(config.red, config.blue),
+            runner: GameRunner::new(config.red, config.blue, config.swap),
             cursor: (5, 5),
             app_state: AppState::Playing,
         };

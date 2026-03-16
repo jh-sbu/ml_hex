@@ -20,10 +20,11 @@ impl PlayerConfig {
 pub struct TuiConfig {
     pub red: PlayerConfig,
     pub blue: PlayerConfig,
+    pub swap: bool,
 }
 
 impl TuiConfig {
-    pub fn new(red: PlayerConfig, blue: PlayerConfig) -> Self {
-        Self { red, blue }
+    pub fn new(red: PlayerConfig, blue: PlayerConfig, swap: bool) -> Self {
+        Self { red, blue, swap }
     }
 }
