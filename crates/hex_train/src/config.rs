@@ -15,6 +15,8 @@ pub struct AlphaZeroConfig {
     pub gradient_steps: u32,
     /// Save a checkpoint every N generations.
     pub checkpoint_every: u32,
+    /// Directory to write checkpoint files into.
+    pub checkpoint_dir: String,
     /// Adam learning rate.
     pub learning_rate: f64,
     /// PUCT exploration constant.
@@ -33,6 +35,7 @@ impl Default for AlphaZeroConfig {
             batch_size: 256,
             gradient_steps: 100,
             checkpoint_every: 1,
+            checkpoint_dir: "checkpoints".to_string(),
             learning_rate: 1e-3,
             c_puct: 1.0,
             temperature_moves: 30,

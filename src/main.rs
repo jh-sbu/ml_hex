@@ -53,6 +53,8 @@ struct AlphazeroArgs {
     gradient_steps: u32,
     #[arg(long, default_value_t = 256)]
     batch_size: usize,
+    #[arg(long, default_value = "checkpoints")]
+    checkpoint_dir: String,
 }
 
 #[derive(clap::Args)]
@@ -65,6 +67,8 @@ struct PpoArgs {
     ppo_epochs: u32,
     #[arg(long, default_value_t = 256)]
     batch_size: usize,
+    #[arg(long, default_value = "checkpoints")]
+    checkpoint_dir: String,
 }
 
 fn make_agent(spec: &str) -> PlayerConfig {
@@ -140,6 +144,7 @@ fn main() {
                     simulations: args.sims,
                     gradient_steps: args.gradient_steps,
                     batch_size: args.batch_size,
+                    checkpoint_dir: args.checkpoint_dir,
                     ..Default::default()
                 };
                 if let Err(e) = hex_train::train_alphazero(config) {
@@ -153,6 +158,7 @@ fn main() {
                     episodes_per_gen: args.episodes,
                     ppo_epochs: args.ppo_epochs,
                     batch_size: args.batch_size,
+                    checkpoint_dir: args.checkpoint_dir,
                     ..Default::default()
                 };
                 if let Err(e) = hex_train::train_ppo(config) {

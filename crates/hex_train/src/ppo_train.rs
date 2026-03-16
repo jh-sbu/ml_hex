@@ -28,6 +28,8 @@ pub struct PpoConfig {
     pub value_coeff: f32,
     pub learning_rate: f64,
     pub checkpoint_every: u32,
+    /// Directory to write checkpoint files into.
+    pub checkpoint_dir: String,
 }
 
 impl Default for PpoConfig {
@@ -44,6 +46,7 @@ impl Default for PpoConfig {
             value_coeff: 0.5,
             learning_rate: 1e-3,
             checkpoint_every: 1,
+            checkpoint_dir: "checkpoints".to_string(),
         }
     }
 }
@@ -327,6 +330,7 @@ pub fn train_ppo(config: PpoConfig) -> Result<(), Box<dyn std::error::Error>> {
         .init::<TrainBackend, HexNet<TrainBackend>>();
 
     let recorder = BinFileRecorder::<FullPrecisionSettings>::default();
+    std::fs::create_dir_all(&config.checkpoint_dir)?;
 
     for generation in 0..config.generations {
         // Switch to inference mode for episode collection
@@ -382,12 +386,12 @@ pub fn train_ppo(config: PpoConfig) -> Result<(), Box<dyn std::error::Error>> {
 
         if generation % config.checkpoint_every == 0 {
             net.clone()
-                .save_file(format!("ppo_ckpt_gen{generation}"), &recorder)?;
-            net.clone().save_file("ppo_ckpt_latest", &recorder)?;
+                .save_file(format!("{}/ppo_ckpt_gen{generation}", config.checkpoint_dir), &recorder)?;
+            net.clone().save_file(format!("{}/ppo_ckpt_latest", config.checkpoint_dir), &recorder)?;
         }
     }
 
-    net.save_file("ppo_ckpt_latest", &recorder)?;
+    net.save_file(format!("{}/ppo_ckpt_latest", config.checkpoint_dir), &recorder)?;
     Ok(())
 }
 

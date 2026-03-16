@@ -29,6 +29,7 @@ pub fn train(config: AlphaZeroConfig) -> Result<(), Box<dyn std::error::Error>> 
 
     let mut replay = ReplayBuffer::new(config.replay_capacity);
     let recorder = BinFileRecorder::<FullPrecisionSettings>::default();
+    std::fs::create_dir_all(&config.checkpoint_dir)?;
 
     for generation in 0..config.generations {
         // ---- Self-play: collect experience ----
@@ -95,13 +96,13 @@ pub fn train(config: AlphaZeroConfig) -> Result<(), Box<dyn std::error::Error>> 
         // ---- Checkpointing ----
         if generation % config.checkpoint_every == 0 {
             net.clone()
-                .save_file(format!("ckpt_gen{generation}"), &recorder)?;
-            net.clone().save_file("ckpt_latest", &recorder)?;
+                .save_file(format!("{}/ckpt_gen{generation}", config.checkpoint_dir), &recorder)?;
+            net.clone().save_file(format!("{}/ckpt_latest", config.checkpoint_dir), &recorder)?;
         }
     }
 
     // Final checkpoint
-    net.save_file("ckpt_latest", &recorder)?;
+    net.save_file(format!("{}/ckpt_latest", config.checkpoint_dir), &recorder)?;
     Ok(())
 }
 
