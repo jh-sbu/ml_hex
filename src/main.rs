@@ -88,6 +88,10 @@ fn make_agent(spec: &str) -> PlayerConfig {
             } else {
                 rest.parse().unwrap_or(1000)
             };
+            if budget == 0 {
+                eprintln!("error: mcts budget must be at least 1");
+                std::process::exit(1);
+            }
             PlayerConfig::agent(MctsAgent::new(MctsConfig {
                 rollout_budget: budget,
                 ..MctsConfig::default()
@@ -126,6 +130,10 @@ fn main() {
     let cli = Cli::parse();
     match cli.command {
         Commands::Play(args) => {
+            if args.swap {
+                eprintln!("error: --swap is not yet implemented (swap action is not reachable by human or agent players)");
+                std::process::exit(1);
+            }
             let config = TuiConfig::new(
                 make_agent(&args.red_agent),
                 make_agent(&args.blue_agent),
@@ -138,6 +146,10 @@ fn main() {
         }
         Commands::Train(train) => match train.cmd {
             TrainCmd::Alphazero(args) => {
+                if args.sims == 0 {
+                    eprintln!("error: --sims must be at least 1");
+                    std::process::exit(1);
+                }
                 let config = hex_train::AlphaZeroConfig {
                     generations: args.generations,
                     games_per_gen: args.games,

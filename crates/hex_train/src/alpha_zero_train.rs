@@ -94,7 +94,7 @@ pub fn train(config: AlphaZeroConfig) -> Result<(), Box<dyn std::error::Error>> 
         println!("gen {generation}: loss = {last_loss:.4}");
 
         // ---- Checkpointing ----
-        if generation % config.checkpoint_every == 0 {
+        if (generation + 1) % config.checkpoint_every == 0 {
             net.clone()
                 .save_file(format!("{}/ckpt_gen{generation}", config.checkpoint_dir), &recorder)?;
             net.clone().save_file(format!("{}/ckpt_latest", config.checkpoint_dir), &recorder)?;

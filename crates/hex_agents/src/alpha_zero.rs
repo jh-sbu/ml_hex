@@ -102,62 +102,87 @@ impl PuctTree {
 
     /// Traverse from root to a leaf; expand if needed.
     /// Returns (path of node indices, value for the last node from ITS perspective).
+    ///
+    /// Unexpanded priors are scored alongside expanded children using PUCT
+    /// (treating them as nodes with 0 visits), so the highest-prior move is
+    /// preferred instead of an arbitrary enumeration order.
     fn select_and_expand(&mut self) -> (Vec<usize>, f32) {
         let mut path = vec![0usize];
 
         loop {
             let idx = *path.last().unwrap();
-            let node = &self.nodes[idx];
 
-            if node.is_terminal {
+            if self.nodes[idx].is_terminal {
                 // Terminal: the current_player is the one who would move next (the loser).
                 return (path, 0.0);
             }
 
-            if !node.priors.is_empty() {
-                // Has unexpanded moves — expand one.
-                return self.expand_one(path);
-            }
+            let has_children = !self.nodes[idx].children.is_empty();
+            let has_priors = !self.nodes[idx].priors.is_empty();
 
-            if node.children.is_empty() {
+            if !has_children && !has_priors {
                 // Fully expanded but no children (shouldn't normally happen).
                 return (path, 0.0);
             }
 
-            // All moves expanded — pick best by PUCT score.
-            let parent_visits = node.visits;
+            let parent_visits = self.nodes[idx].visits;
             let c = self.c_puct;
-            let best_idx = node
-                .children
-                .iter()
-                .map(|&(_, child_idx, prior)| {
-                    let child = &self.nodes[child_idx];
-                    let q = if child.visits == 0 {
-                        0.0
-                    } else {
-                        1.0 - child.total_value / child.visits as f32
-                    };
-                    let score = q
-                        + c * prior * (parent_visits as f32).sqrt()
-                            / (1.0 + child.visits as f32);
-                    (score, child_idx)
-                })
-                .max_by(|a, b| a.0.partial_cmp(&b.0).unwrap())
-                .map(|(_, ci)| ci)
-                .expect("children is non-empty");
+            let sqrt_parent = (parent_visits as f32).sqrt();
 
-            path.push(best_idx);
+            // Score expanded children.
+            let best_child: Option<(f32, usize)> = if has_children {
+                self.nodes[idx]
+                    .children
+                    .iter()
+                    .map(|&(_, child_idx, prior)| {
+                        let child = &self.nodes[child_idx];
+                        let q = if child.visits == 0 {
+                            0.0
+                        } else {
+                            1.0 - child.total_value / child.visits as f32
+                        };
+                        let score = q
+                            + c * prior * sqrt_parent / (1.0 + child.visits as f32);
+                        (score, child_idx)
+                    })
+                    .max_by(|a, b| a.0.partial_cmp(&b.0).unwrap())
+            } else {
+                None
+            };
+
+            // Score unexpanded priors (virtual visits = 0, denominator = 1).
+            let best_prior: Option<(f32, usize)> = if has_priors {
+                self.nodes[idx]
+                    .priors
+                    .iter()
+                    .enumerate()
+                    .map(|(i, &(_, prior))| {
+                        let score = c * prior * sqrt_parent;
+                        (score, i)
+                    })
+                    .max_by(|a, b| a.0.partial_cmp(&b.0).unwrap())
+            } else {
+                None
+            };
+
+            match (best_child, best_prior) {
+                (Some((cs, child_idx)), Some((ps, _))) if cs >= ps => {
+                    path.push(child_idx);
+                }
+                (_, Some((_, prior_idx))) => {
+                    return self.expand_prior(path, prior_idx);
+                }
+                (Some((_, child_idx)), None) => {
+                    path.push(child_idx);
+                }
+                (None, None) => return (path, 0.0),
+            }
         }
     }
 
-    fn expand_one(&mut self, mut path: Vec<usize>) -> (Vec<usize>, f32) {
+    fn expand_prior(&mut self, mut path: Vec<usize>, prior_idx: usize) -> (Vec<usize>, f32) {
         let idx = *path.last().unwrap();
-        // Pop one prior from the node.
-        let (mv, prior) = self
-            .nodes[idx]
-            .priors
-            .pop()
-            .expect("priors non-empty guaranteed by caller");
+        let (mv, prior) = self.nodes[idx].priors.swap_remove(prior_idx);
 
         let child_state = self.nodes[idx]
             .state

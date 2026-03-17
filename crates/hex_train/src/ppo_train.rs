@@ -172,9 +172,9 @@ fn sample_action_from_probs(probs: &[f32]) -> usize {
 ///
 /// Returns `Vec<(advantage, return_)>` with one entry per step.
 ///
-/// The negation of `next_value` accounts for the opponent's perspective:
-/// `V(s_{t+1})` from the current player's POV = `-V(s_{t+1})` from the
-/// opponent's POV (who is the current player at step t+1).
+/// The negation of `next_value` and the recursive `gae` term both account for
+/// the opponent's perspective: values and advantages from step t+1 are from
+/// the opponent's POV, so they are negated before accumulation.
 fn compute_gae(
     steps: &[PpoStep],
     gamma: f32,
@@ -189,7 +189,7 @@ fn compute_gae(
     for t in (0..n).rev() {
         let delta =
             steps[t].reward + gamma * (-next_value) - steps[t].value_old;
-        gae = delta + gamma * lambda * gae;
+        gae = delta - gamma * lambda * gae;
         advantages[t] = gae;
         returns[t] = gae + steps[t].value_old;
         next_value = steps[t].value_old;
@@ -384,7 +384,7 @@ pub fn train_ppo(config: PpoConfig) -> Result<(), Box<dyn std::error::Error>> {
             "gen {generation}: policy_loss={last_policy_loss:.4} value_loss={last_value_loss:.4}"
         );
 
-        if generation % config.checkpoint_every == 0 {
+        if (generation + 1) % config.checkpoint_every == 0 {
             net.clone()
                 .save_file(format!("{}/ppo_ckpt_gen{generation}", config.checkpoint_dir), &recorder)?;
             net.clone().save_file(format!("{}/ppo_ckpt_latest", config.checkpoint_dir), &recorder)?;
